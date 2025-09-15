@@ -1,0 +1,768 @@
+[
+  [
+    {
+      "code": 63,
+      "letter": "?",
+      "points": 0,
+      "count": 2
+    },
+    {
+      "code": 65,
+      "letter": "A",
+      "points": 1,
+      "count": 11
+    },
+    {
+      "code": 66,
+      "letter": "B",
+      "points": 9,
+      "count": 2
+    },
+    {
+      "code": 67,
+      "letter": "C",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 68,
+      "letter": "D",
+      "points": 2,
+      "count": 4
+    },
+    {
+      "code": 69,
+      "letter": "E",
+      "points": 1,
+      "count": 9
+    },
+    {
+      "code": 70,
+      "letter": "F",
+      "points": 8,
+      "count": 2
+    },
+    {
+      "code": 71,
+      "letter": "G",
+      "points": 9,
+      "count": 2
+    },
+    {
+      "code": 72,
+      "letter": "H",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 73,
+      "letter": "I",
+      "points": 1,
+      "count": 10
+    },
+    {
+      "code": 74,
+      "letter": "J",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 76,
+      "letter": "L",
+      "points": 1,
+      "count": 4
+    },
+    {
+      "code": 77,
+      "letter": "M",
+      "points": 4,
+      "count": 3
+    },
+    {
+      "code": 78,
+      "letter": "N",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 79,
+      "letter": "O",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 80,
+      "letter": "P",
+      "points": 2,
+      "count": 4
+    },
+    {
+      "code": 82,
+      "letter": "R",
+      "points": 1,
+      "count": 7
+    },
+    {
+      "code": 83,
+      "letter": "S",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 84,
+      "letter": "T",
+      "points": 1,
+      "count": 7
+    },
+    {
+      "code": 85,
+      "letter": "U",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 86,
+      "letter": "V",
+      "points": 8,
+      "count": 2
+    },
+    {
+      "code": 88,
+      "letter": "X",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 90,
+      "letter": "Z",
+      "points": 10,
+      "count": 1
+    }
+  ],
+  [
+    {
+      "code": 63,
+      "letter": "?",
+      "points": 0,
+      "count": 2
+    },
+    {
+      "code": 65,
+      "letter": "A",
+      "points": 1,
+      "count": 9
+    },
+    {
+      "code": 66,
+      "letter": "B",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 67,
+      "letter": "C",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 68,
+      "letter": "D",
+      "points": 2,
+      "count": 3
+    },
+    {
+      "code": 69,
+      "letter": "E",
+      "points": 1,
+      "count": 15
+    },
+    {
+      "code": 70,
+      "letter": "F",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 71,
+      "letter": "G",
+      "points": 2,
+      "count": 2
+    },
+    {
+      "code": 72,
+      "letter": "H",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 73,
+      "letter": "I",
+      "points": 1,
+      "count": 8
+    },
+    {
+      "code": 74,
+      "letter": "J",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 75,
+      "letter": "K",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 76,
+      "letter": "L",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 77,
+      "letter": "M",
+      "points": 2,
+      "count": 3
+    },
+    {
+      "code": 78,
+      "letter": "N",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 79,
+      "letter": "O",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 80,
+      "letter": "P",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 81,
+      "letter": "Q",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 82,
+      "letter": "R",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 83,
+      "letter": "S",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 84,
+      "letter": "T",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 85,
+      "letter": "U",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 86,
+      "letter": "V",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 87,
+      "letter": "W",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 88,
+      "letter": "X",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 89,
+      "letter": "Y",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 90,
+      "letter": "Z",
+      "points": 10,
+      "count": 1
+    }
+  ],
+  [
+    {
+      "code": 63,
+      "letter": "?",
+      "points": 0,
+      "count": 2
+    },
+    {
+      "code": 65,
+      "letter": "A",
+      "points": 1,
+      "count": 9
+    },
+    {
+      "code": 66,
+      "letter": "B",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 67,
+      "letter": "C",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 68,
+      "letter": "D",
+      "points": 2,
+      "count": 4
+    },
+    {
+      "code": 69,
+      "letter": "E",
+      "points": 1,
+      "count": 12
+    },
+    {
+      "code": 70,
+      "letter": "F",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 71,
+      "letter": "G",
+      "points": 2,
+      "count": 3
+    },
+    {
+      "code": 72,
+      "letter": "H",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 73,
+      "letter": "I",
+      "points": 1,
+      "count": 9
+    },
+    {
+      "code": 74,
+      "letter": "J",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 75,
+      "letter": "K",
+      "points": 5,
+      "count": 1
+    },
+    {
+      "code": 76,
+      "letter": "L",
+      "points": 1,
+      "count": 4
+    },
+    {
+      "code": 77,
+      "letter": "M",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 78,
+      "letter": "N",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 79,
+      "letter": "O",
+      "points": 1,
+      "count": 8
+    },
+    {
+      "code": 80,
+      "letter": "P",
+      "points": 3,
+      "count": 2
+    },
+    {
+      "code": 81,
+      "letter": "Q",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 82,
+      "letter": "R",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 83,
+      "letter": "S",
+      "points": 1,
+      "count": 4
+    },
+    {
+      "code": 84,
+      "letter": "T",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 85,
+      "letter": "U",
+      "points": 1,
+      "count": 4
+    },
+    {
+      "code": 86,
+      "letter": "V",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 87,
+      "letter": "W",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 88,
+      "letter": "X",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 89,
+      "letter": "Y",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 90,
+      "letter": "Z",
+      "points": 10,
+      "count": 1
+    }
+  ],
+  [
+    {
+      "code": 63,
+      "letter": "?",
+      "points": 0,
+      "count": 2
+    },
+    {
+      "code": 65,
+      "letter": "A",
+      "points": 1,
+      "count": 11
+    },
+    {
+      "code": 66,
+      "letter": "B",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 67,
+      "letter": "C",
+      "points": 2,
+      "count": 4
+    },
+    {
+      "code": 68,
+      "letter": "D",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 69,
+      "letter": "E",
+      "points": 1,
+      "count": 11
+    },
+    {
+      "code": 70,
+      "letter": "F",
+      "points": 4,
+      "count": 1
+    },
+    {
+      "code": 71,
+      "letter": "G",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 72,
+      "letter": "H",
+      "points": 4,
+      "count": 2
+    },
+    {
+      "code": 73,
+      "letter": "I",
+      "points": 1,
+      "count": 11
+    },
+    {
+      "code": 74,
+      "letter": "J",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 75,
+      "letter": "K",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 76,
+      "letter": "L",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 77,
+      "letter": "M",
+      "points": 4,
+      "count": 3
+    },
+    {
+      "code": 78,
+      "letter": "N",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 79,
+      "letter": "O",
+      "points": 1,
+      "count": 5
+    },
+    {
+      "code": 80,
+      "letter": "P",
+      "points": 4,
+      "count": 3
+    },
+    {
+      "code": 81,
+      "letter": "Q",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 82,
+      "letter": "R",
+      "points": 1,
+      "count": 7
+    },
+    {
+      "code": 83,
+      "letter": "S",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 84,
+      "letter": "T",
+      "points": 1,
+      "count": 6
+    },
+    {
+      "code": 85,
+      "letter": "U",
+      "points": 1,
+      "count": 4
+    },
+    {
+      "code": 86,
+      "letter": "V",
+      "points": 4,
+      "count": 1
+    },
+    {
+      "code": 87,
+      "letter": "W",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 88,
+      "letter": "X",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 89,
+      "letter": "Y",
+      "points": 8,
+      "count": 1
+    },
+    {
+      "code": 90,
+      "letter": "Z",
+      "points": 8,
+      "count": 1
+    }
+  ],
+  [
+    {
+      "code": 63,
+      "letter": "?",
+      "points": 0,
+      "count": 2
+    },
+    {
+      "code": 65,
+      "letter": "A",
+      "points": 1,
+      "count": 14
+    },
+    {
+      "code": 66,
+      "letter": "B",
+      "points": 5,
+      "count": 3
+    },
+    {
+      "code": 67,
+      "letter": "C",
+      "points": 2,
+      "count": 6
+    },
+    {
+      "code": 68,
+      "letter": "D",
+      "points": 5,
+      "count": 3
+    },
+    {
+      "code": 69,
+      "letter": "E",
+      "points": 1,
+      "count": 11
+    },
+    {
+      "code": 70,
+      "letter": "F",
+      "points": 5,
+      "count": 3
+    },
+    {
+      "code": 71,
+      "letter": "G",
+      "points": 8,
+      "count": 2
+    },
+    {
+      "code": 72,
+      "letter": "H",
+      "points": 8,
+      "count": 2
+    },
+    {
+      "code": 73,
+      "letter": "I",
+      "points": 1,
+      "count": 12
+    },
+    {
+      "code": 76,
+      "letter": "L",
+      "points": 3,
+      "count": 5
+    },
+    {
+      "code": 77,
+      "letter": "M",
+      "points": 3,
+      "count": 5
+    },
+    {
+      "code": 78,
+      "letter": "N",
+      "points": 3,
+      "count": 5
+    },
+    {
+      "code": 79,
+      "letter": "O",
+      "points": 1,
+      "count": 15
+    },
+    {
+      "code": 80,
+      "letter": "P",
+      "points": 5,
+      "count": 3
+    },
+    {
+      "code": 81,
+      "letter": "Q",
+      "points": 10,
+      "count": 1
+    },
+    {
+      "code": 82,
+      "letter": "R",
+      "points": 2,
+      "count": 6
+    },
+    {
+      "code": 83,
+      "letter": "S",
+      "points": 2,
+      "count": 6
+    },
+    {
+      "code": 84,
+      "letter": "T",
+      "points": 2,
+      "count": 6
+    },
+    {
+      "code": 85,
+      "letter": "U",
+      "points": 3,
+      "count": 5
+    },
+    {
+      "code": 86,
+      "letter": "V",
+      "points": 5,
+      "count": 3
+    },
+    {
+      "code": 90,
+      "letter": "Z",
+      "points": 8,
+      "count": 2
+    }
+  ]
+]
