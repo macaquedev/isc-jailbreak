@@ -7,6 +7,8 @@
 // @match        *://isc.ro/*
 // @grant        unsafeWindow
 // @grant        GM_registerMenuCommand
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @run-at      document-start
 // ==/UserScript==
 
@@ -15,11 +17,16 @@
 
   const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
 
-  // Global desired queue (user input), applied to any new bag when draw is invoked
+  // Global desired queue (from banner input), applied to new bags
   let globalDesiredQueue = [];
 
   // Per-bag queues, so a given bag carries its own remaining desired tiles
   const desiredByBag = new WeakMap();
+  const lastTextByBag = new WeakMap();
+
+  // Per-window banner elements
+  const bannerByWindow = new WeakMap();
+  const STORAGE_KEY_TEXT = 'isc_tile_picker_text';
 
   // Normalize user input (e.g., 'AEIOU??') → array of char codes
   function parseDesired(input) {
@@ -32,18 +39,101 @@
     return codes;
   }
 
-  function promptForTiles(defaultText = '') {
-    const txt = prompt("Enter desired tiles to draw (e.g., AEIRST??). Leave blank for random.", defaultText);
-    return parseDesired(txt || '');
+  function ensureBanner(win) {
+    try {
+      if (bannerByWindow.has(win)) return bannerByWindow.get(win);
+      const doc = win.document;
+      const root = doc.createElement('div');
+      root.id = 'isc-tile-picker-banner';
+      root.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;'+
+        'background:rgba(0,0,0,0.8);color:#fff;font:14px/1.2 sans-serif;'+
+        'display:flex;gap:8px;align-items:center;justify-content:flex-end;'+
+        'padding:6px 10px;box-shadow:0 2px 6px rgba(0,0,0,0.4);';
+      const label = doc.createElement('span');
+      label.textContent = 'Desired tiles:';
+      const input = doc.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'e.g., RETINAS??';
+      input.style.cssText = 'padding:4px 6px;border-radius:3px;border:1px solid #666;background:#111;color:#fff;min-width:220px;';
+      const applyBtn = doc.createElement('button');
+      applyBtn.textContent = 'Apply';
+      applyBtn.style.cssText = 'padding:4px 10px;border-radius:3px;border:1px solid #888;background:#2f7;color:#000;cursor:pointer;';
+      const clearBtn = doc.createElement('button');
+      clearBtn.textContent = 'Clear';
+      clearBtn.style.cssText = 'padding:4px 10px;border-radius:3px;border:1px solid #888;background:#f55;color:#000;cursor:pointer;';
+      const hint = doc.createElement('span');
+      hint.textContent = 'Applies to next refill';
+      hint.style.cssText = 'opacity:0.7;font-size:12px;';
+      root.append(label, input, applyBtn, clearBtn, hint);
+
+      const mount = () => {
+        if (!doc.body) return false;
+        if (!doc.body.contains(root)) doc.body.appendChild(root);
+        return true;
+      };
+      if (!mount()) {
+        const mo = new win.MutationObserver(() => { if (mount()) mo.disconnect(); });
+        mo.observe(doc.documentElement || doc, { childList: true, subtree: true });
+      }
+
+      const apply = () => {
+        const text = String(input.value || '');
+        const desired = parseDesired(text);
+        globalDesiredQueue = desired.slice();
+        try { if (typeof GM_setValue === 'function') GM_setValue(STORAGE_KEY_TEXT, text); } catch(_) {}
+        // No alert; subtle visual cue
+        root.style.background = 'rgba(20,80,20,0.9)';
+        setTimeout(() => { root.style.background = 'rgba(0,0,0,0.8)'; }, 300);
+      };
+      const clear = () => {
+        input.value = '';
+        globalDesiredQueue = [];
+        try { if (typeof GM_setValue === 'function') GM_setValue(STORAGE_KEY_TEXT, ''); } catch(_) {}
+        root.style.background = 'rgba(80,20,20,0.9)';
+        setTimeout(() => { root.style.background = 'rgba(0,0,0,0.8)'; }, 300);
+      };
+      applyBtn.addEventListener('click', apply);
+      clearBtn.addEventListener('click', clear);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') apply(); });
+
+      // Prefill from storage
+      try {
+        if (typeof GM_getValue === 'function') {
+          const saved = GM_getValue(STORAGE_KEY_TEXT, '');
+          if (saved && typeof saved === 'string') {
+            input.value = saved;
+            globalDesiredQueue = parseDesired(saved);
+          }
+        }
+      } catch(_) {}
+
+      const banner = { root, input, apply, clear };
+      bannerByWindow.set(win, banner);
+      return banner;
+    } catch (e) { return null; }
+  }
+
+  function getDesiredFromBanner(win) {
+    try {
+      const b = ensureBanner(win);
+      if (!b) return globalDesiredQueue.slice();
+      const desired = parseDesired(b.input.value);
+      if (desired.length > 0) return desired;
+      return globalDesiredQueue.slice();
+    } catch (_) {
+      return globalDesiredQueue.slice();
+    }
+  }
+
+  function getBannerText(win) {
+    try { const b = ensureBanner(win); return b && b.input ? String(b.input.value) : ''; } catch (_) { return ''; }
   }
 
   // Provide a menu item to change desired tiles at any time
   if (typeof GM_registerMenuCommand === 'function') {
-    GM_registerMenuCommand('Set desired tiles…', () => {
-      // reconstruct as text
-      const current = String.fromCharCode.apply(null, globalDesiredQueue);
-      globalDesiredQueue = promptForTiles(current);
-      alert(`Desired tiles set to: ${String.fromCharCode.apply(null, globalDesiredQueue) || '(none)'}`);
+    GM_registerMenuCommand('Focus tile banner', () => {
+      const b = ensureBanner(w);
+      if (b && b.input) { b.input.focus(); b.input.select(); }
     });
   }
 
@@ -156,12 +246,13 @@
       }
       win.W7 = function (bag) {
         try {
-          if (!desiredByBag.has(bag)) {
-            if (globalDesiredQueue.length > 0) {
-              desiredByBag.set(bag, globalDesiredQueue.slice());
-            } else {
-              desiredByBag.set(bag, promptForTiles());
-            }
+          const bannerText = getBannerText(win);
+          const lastText = lastTextByBag.get(bag);
+          if (bannerText !== lastText) {
+            lastTextByBag.set(bag, bannerText);
+            desiredByBag.set(bag, parseDesired(bannerText));
+          } else if (!desiredByBag.has(bag)) {
+            desiredByBag.set(bag, getDesiredFromBanner(win));
           }
           const queue = desiredByBag.get(bag) || [];
           if (queue.length > 0) {
@@ -225,8 +316,7 @@
       if (typeof origR7 === 'function' && !win.__ISC_TILE_PICKER_R7__) {
         win.R7 = function (bag /*, rack */) {
           try {
-            const current = String.fromCharCode.apply(null, desiredByBag.get(bag) || []);
-            const desired = promptForTiles(current);
+            const desired = getDesiredFromBanner(win);
             desiredByBag.set(bag, desired);
             // Guide W7 by overriding Math.random for the duration of this refill
             const fractions = computeFractionsForDesired(bag, desired, props, desired.length);
@@ -244,8 +334,7 @@
         win.$6 = function (rackCtx, bag /*, needed, ... */) {
           try {
             if (bag && typeof bag === 'object') {
-              const current = String.fromCharCode.apply(null, desiredByBag.get(bag) || []);
-              const desired = promptForTiles(current);
+              const desired = getDesiredFromBanner(win);
               desiredByBag.set(bag, desired);
               // third argument is typically needed tile count
               const needed = arguments[2] | 0;
@@ -272,6 +361,7 @@
       try {
         const cw = ifr.contentWindow;
         if (cw && cw.location && cw.location.origin === window.location.origin) {
+          ensureBanner(cw);
           if (hookWindow(cw)) hooked = true;
         }
       } catch (e) {
@@ -283,6 +373,11 @@
 
   // Repeatedly try to hook for a while; also watch for dynamic iframes
   function startHooking() {
+    // Ensure banner before first turn and focus input
+    const topBanner = ensureBanner(w);
+    if (topBanner && topBanner.input) {
+      try { topBanner.input.focus(); topBanner.input.select(); } catch(_) {}
+    }
     const start = Date.now();
     const interval = setInterval(() => {
       const ok = hookAllFrames();
