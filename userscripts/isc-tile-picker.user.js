@@ -20,10 +20,13 @@
 
   // Global desired queue (from banner input), applied to new bags
   let globalDesiredQueue = [];
+  // Incremented every time user clicks Apply/Clear to force reseed for all bags
+  let globalInputEpoch = 0;
 
   // Per-bag queues, so a given bag carries its own remaining desired tiles
   const desiredByBag = new WeakMap();
   const lastTextByBag = new WeakMap();
+  const epochByBag = new WeakMap();
 
   // Per-window banner elements
   const bannerByWindow = new WeakMap();
@@ -63,7 +66,7 @@
       clearBtn.textContent = 'Clear';
       clearBtn.style.cssText = 'padding:4px 10px;border-radius:3px;border:1px solid #888;background:#f55;color:#000;cursor:pointer;';
       const hint = doc.createElement('span');
-      hint.textContent = 'Applies to next refill';
+      hint.textContent = 'Applies to next refill/exchange; missing tiles will be conjured';
       hint.style.cssText = 'opacity:0.7;font-size:12px;';
       root.append(label, input, applyBtn, clearBtn, hint);
 
@@ -85,6 +88,8 @@
         // No alert; subtle visual cue
         root.style.background = 'rgba(20,80,20,0.9)';
         setTimeout(() => { root.style.background = 'rgba(0,0,0,0.8)'; }, 300);
+        // Force reseed on next draw/refill in all frames
+        globalInputEpoch++;
       };
       const clear = () => {
         input.value = '';
@@ -92,6 +97,7 @@
         try { if (typeof GM_setValue === 'function') GM_setValue(STORAGE_KEY_TEXT, ''); } catch(_) {}
         root.style.background = 'rgba(80,20,20,0.9)';
         setTimeout(() => { root.style.background = 'rgba(0,0,0,0.8)'; }, 300);
+        globalInputEpoch++;
       };
       applyBtn.addEventListener('click', apply);
       clearBtn.addEventListener('click', clear);
@@ -116,10 +122,7 @@
 
   function getDesiredFromBanner(win) {
     try {
-      const b = ensureBanner(win);
-      if (!b) return globalDesiredQueue.slice();
-      const desired = parseDesired(b.input.value);
-      if (desired.length > 0) return desired;
+      // Always use the last applied input, not live edits
       return globalDesiredQueue.slice();
     } catch (_) {
       return globalDesiredQueue.slice();
@@ -127,7 +130,19 @@
   }
 
   function getBannerText(win) {
-    try { const b = ensureBanner(win); return b && b.input ? String(b.input.value) : ''; } catch (_) { return ''; }
+    try {
+      const b = ensureBanner(win);
+      const local = b && b.input ? String(b.input.value) : '';
+      if (local && local.length > 0) return local;
+      if (win !== w) {
+        try {
+          const tb = ensureBanner(w);
+          const topLocal = tb && tb.input ? String(tb.input.value) : '';
+          if (topLocal && topLocal.length > 0) return topLocal;
+        } catch (_) {}
+      }
+      return '';
+    } catch (_) { return ''; }
   }
 
   // Provide a menu item to change desired tiles at any time
@@ -150,27 +165,27 @@
       const arrayProp = m[3];
       const indexVar = m[4];
       const charProp = m[5];
-      // find total tiles prop via "bagVar.total == 0" or "0 == bagVar.total"
-      const bagEsc = bagVar.replace(/[$]/g, '\\$&');
-      const totalRe1 = new RegExp(bagEsc + "\\.(\\w+)\\s*==\\s*0");
-      const totalRe2 = new RegExp("0\\s*==\\s*" + bagEsc + "\\.(\\w+)");
-      const mt = s.match(totalRe1) || s.match(totalRe2);
-      if (!mt) return null;
-      const totalProp = mt[1];
-      // find count prop via "--bagVar.arrayProp[indexVar].count" or "bagVar.arrayProp[indexVar].count--"
-      const countRe1 = new RegExp("--\\s*" + bagEsc + "\\." + arrayProp + "\\\\[" + indexVar + "\\\\]\\.([A-Za-z_$][\\w$]*)");
-      const countRe2 = new RegExp(bagEsc + "\\." + arrayProp + "\\\\[" + indexVar + "\\\\]\\.([A-Za-z_$][\\w$]*)\\s*--");
-      const mc = s.match(countRe1) || s.match(countRe2);
-      if (!mc) return null;
-      const countProp = mc[1];
-      return { wrapperName, arrayProp, charProp, totalProp, countProp };
+      const out = { wrapperName, arrayProp, charProp };
+      // Try to discover total and count props; tolerate failure
+      try {
+        const bagEsc = bagVar.replace(/[$]/g, '\\$&');
+        const totalRe1 = new RegExp(bagEsc + "\\.(\\w+)\\s*==\\s*0");
+        const totalRe2 = new RegExp("0\\s*==\\s*" + bagEsc + "\\.(\\w+)");
+        const mt = s.match(totalRe1) || s.match(totalRe2);
+        if (mt) out.totalProp = mt[1];
+        const countRe1 = new RegExp("--\\s*" + bagEsc + "\\." + arrayProp + "\\\\[" + indexVar + "\\\\]\\.([A-Za-z_$][\\w$]*)");
+        const countRe2 = new RegExp(bagEsc + "\\." + arrayProp + "\\\\[" + indexVar + "\\\\]\\.([A-Za-z_$][\\w$]*)\\s*--");
+        const mc = s.match(countRe1) || s.match(countRe2);
+        if (mc) out.countProp = mc[1];
+      } catch (_) {}
+      return out;
     } catch (e) { return null; }
   }
 
   // Compute a sequence of Math.random() values to force-draw desired codes
   function computeFractionsForDesired(bag, desiredCodes, props, maxDraws) {
     try {
-      if (!props) return [];
+      if (!props || !props.arrayProp || !props.countProp || !props.charProp || !props.totalProp) return [];
       const list = bag[props.arrayProp];
       // Make a shallow copy of counts and total
       const counts = list.map(e => e[props.countProp] | 0);
@@ -247,13 +262,12 @@
       }
       win.W7 = function (bag) {
         try {
-          const bannerText = getBannerText(win);
-          const lastText = lastTextByBag.get(bag);
-          if (bannerText !== lastText) {
-            lastTextByBag.set(bag, bannerText);
-            desiredByBag.set(bag, parseDesired(bannerText));
-          } else if (!desiredByBag.has(bag)) {
+          // Reseed per bag when user has applied new input
+          const bagEpoch = epochByBag.get(bag) | 0;
+          if (bagEpoch !== globalInputEpoch || !desiredByBag.has(bag)) {
             desiredByBag.set(bag, getDesiredFromBanner(win));
+            epochByBag.set(bag, globalInputEpoch);
+            lastTextByBag.set(bag, getBannerText(win));
           }
           const queue = desiredByBag.get(bag) || [];
           if (queue.length > 0) {
@@ -267,34 +281,24 @@
               if (picked) return picked;
             }
 
-            // If we could not update counts via takeSpecific, but we know the bag structure, adjust counts and return wrapped value
+            // If we could not update counts via takeSpecific, conjure via wrapper if available.
             if (props && typeof win[props.wrapperName] === 'function') {
               try {
-                const list = bag[props.arrayProp];
-                // try to decrement the matching tile
-                let decremented = false;
-                for (let i = 0; i < list.length; i++) {
-                  if (list[i][props.charProp] === code && list[i][props.countProp] > 0) {
-                    list[i][props.countProp]--;
-                    if (bag[props.totalProp] > 0) bag[props.totalProp]--;
-                    decremented = true;
-                    break;
-                  }
-                }
-                // if matching not found, decrement first available tile to keep totals consistent
-                if (!decremented) {
+                if (props.arrayProp && props.countProp && props.charProp) {
+                  const list = bag[props.arrayProp];
+                  // Try to decrement only if the desired tile exists; otherwise, just conjure
                   for (let i = 0; i < list.length; i++) {
-                    if (list[i][props.countProp] > 0) {
+                    if (list[i][props.charProp] === code && list[i][props.countProp] > 0) {
                       list[i][props.countProp]--;
                       if (bag[props.totalProp] > 0) bag[props.totalProp]--;
                       break;
                     }
                   }
                 }
-                // return desired tile regardless
+                // return desired tile regardless (conjure if absent)
                 return win[props.wrapperName](code);
               } catch (_) {
-                // fall through to random
+                // ignore and let fallback run
               }
             }
 
@@ -319,6 +323,8 @@
           try {
             const desired = getDesiredFromBanner(win);
             desiredByBag.set(bag, desired);
+            epochByBag.set(bag, globalInputEpoch);
+            lastTextByBag.set(bag, getBannerText(win));
             // Guide W7 by overriding Math.random for the duration of this refill
             const fractions = computeFractionsForDesired(bag, desired, props, desired.length);
             return withRandomSequence(win, fractions, () => origR7.apply(this, arguments));
@@ -337,6 +343,8 @@
             if (bag && typeof bag === 'object') {
               const desired = getDesiredFromBanner(win);
               desiredByBag.set(bag, desired);
+              epochByBag.set(bag, globalInputEpoch);
+              lastTextByBag.set(bag, getBannerText(win));
               // third argument is typically needed tile count
               const needed = arguments[2] | 0;
               const fractions = computeFractionsForDesired(bag, desired, props, needed || desired.length);
