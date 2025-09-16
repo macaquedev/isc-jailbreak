@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ISC Tile Picker (override bag draw)
+// @name         ISC Jailbreak
 // @namespace    https://isc.ro/
 // @version      1.0.0
 // @description  Prompt for desired tiles and draw those from the bag instead of random
@@ -10,6 +10,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @run-at      document-start
+// @author       Alex Pylypenko
 // ==/UserScript==
 
 (function () {
