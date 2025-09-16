@@ -27,6 +27,7 @@
   const desiredByBag = new WeakMap();
   const lastTextByBag = new WeakMap();
   const epochByBag = new WeakMap();
+  const activeRefillBags = new WeakSet();
 
   // Per-window banner elements
   const bannerByWindow = new WeakMap();
@@ -66,7 +67,7 @@
       clearBtn.textContent = 'Clear';
       clearBtn.style.cssText = 'padding:4px 10px;border-radius:3px;border:1px solid #888;background:#f55;color:#000;cursor:pointer;';
       const hint = doc.createElement('span');
-      hint.textContent = 'Applies to next refill/exchange; missing tiles will be conjured';
+      hint.textContent = 'Next refill/exchange: short input = partial rack; missing tiles conjured';
       hint.style.cssText = 'opacity:0.7;font-size:12px;';
       root.append(label, input, applyBtn, clearBtn, hint);
 
@@ -262,6 +263,11 @@
       }
       win.W7 = function (bag) {
         try {
+          // If we're actively refilling and have no desired tiles left, block draws by returning null
+          if (activeRefillBags.has(bag)) {
+            const q = desiredByBag.get(bag) || [];
+            if (!q || q.length === 0) return null;
+          }
           // Reseed per bag when user has applied new input
           const bagEpoch = epochByBag.get(bag) | 0;
           if (bagEpoch !== globalInputEpoch || !desiredByBag.has(bag)) {
@@ -325,9 +331,30 @@
             desiredByBag.set(bag, desired);
             epochByBag.set(bag, globalInputEpoch);
             lastTextByBag.set(bag, getBannerText(win));
+            // If user requested empty rack, proactively clear rack object if provided
+            if ((!desired || desired.length === 0) && arguments[1]) {
+              try {
+                const rack = arguments[1];
+                const size = rack && (rack.DeckLayoutPanel | 0);
+                if (size && size > 0) {
+                  const codes = rack.Collections_UnmodifiableSet;
+                  const flags = rack.MenuBar;
+                  const idxMap = rack.d;
+                  const emptyCode = (typeof win.zsb !== 'undefined') ? win.zsb : 0;
+                  for (let i = 0; i < size; i++) {
+                    if (codes && codes.length > i) codes[i] = emptyCode;
+                    if (idxMap && idxMap.length > i) idxMap[i] = -1;
+                    if (flags && flags.length > i) flags[i] = 0;
+                  }
+                }
+              } catch (_) {}
+            }
             // Guide W7 by overriding Math.random for the duration of this refill
             const fractions = computeFractionsForDesired(bag, desired, props, desired.length);
-            return withRandomSequence(win, fractions, () => origR7.apply(this, arguments));
+            activeRefillBags.add(bag);
+            const result = withRandomSequence(win, fractions, () => origR7.apply(this, arguments));
+            activeRefillBags.delete(bag);
+            return result;
           } catch(_e) {}
           return origR7.apply(this, arguments);
         };
@@ -338,17 +365,29 @@
       // Hook $6 (common refill function) to prompt just-in-time as well
       const orig$6 = win.$6;
       if (typeof orig$6 === 'function' && !win.__ISC_TILE_PICKER_$6__) {
-        win.$6 = function (rackCtx, bag /*, needed, ... */) {
+        win.$6 = function (rackCtx, bag /*, valueString, playerIndex */) {
           try {
             if (bag && typeof bag === 'object') {
-              const desired = getDesiredFromBanner(win);
-              desiredByBag.set(bag, desired);
-              epochByBag.set(bag, globalInputEpoch);
-              lastTextByBag.set(bag, getBannerText(win));
-              // third argument is typically needed tile count
-              const needed = arguments[2] | 0;
-              const fractions = computeFractionsForDesired(bag, desired, props, needed || desired.length);
-              return withRandomSequence(win, fractions, () => orig$6.apply(this, arguments));
+              // Seed or reuse the per-bag desired queue for this epoch
+              let queue = desiredByBag.get(bag);
+              const bagEpoch = epochByBag.get(bag) | 0;
+              if (!queue || bagEpoch !== globalInputEpoch) {
+                const desired = getDesiredFromBanner(win);
+                desiredByBag.set(bag, desired.slice());
+                epochByBag.set(bag, globalInputEpoch);
+                lastTextByBag.set(bag, getBannerText(win));
+                queue = desiredByBag.get(bag) || [];
+              }
+              // Build explicit rack string from desired queue; empty string → empty rack
+              const overrideStr = (queue && queue.length)
+                ? String.fromCharCode.apply(null, queue)
+                : '';
+              arguments[2] = overrideStr;
+              const fractions = computeFractionsForDesired(bag, queue, props, queue ? queue.length : 0);
+              activeRefillBags.add(bag);
+              const result = withRandomSequence(win, fractions, () => orig$6.apply(this, arguments));
+              activeRefillBags.delete(bag);
+              return result;
             }
           } catch(_e) {}
           return orig$6.apply(this, arguments);
